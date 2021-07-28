@@ -1,0 +1,47 @@
+name: AsyncAPI documents processing
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+    #"standard step" where repo needs to be checked-out first
+    - name: Checkout repo
+      uses: actions/checkout@v2
+    
+    # Node Setup
+    - name: Node Setup
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+        
+    # Build App
+    - name: Build
+      run: go build -v ./...
+      
+    # Run App
+    - name: Generate YAML
+      run: go run -v ./...
+   
+    # Install @asyncapi/generator
+    - name: Install @asyncapi/generator
+      run: npm -g install @asyncapi/generator
+      
+    # Install asciidoc generator
+    - name: Install Asciidoc generator
+      run: npm -g install @michalmela/asyncapi-asciidoctor-template
+      
+    #list files
+    - name: List files
+      run: ls -a
+      
+   # Asciidoc generator
+    - name: Asciidoc generator
+      run: ag asyncapi.yaml @michalmela/asyncapi-asciidoctor-template -o modules/ROOT/pages --force-write
+
+    #list files
+    - name: List files
+      run: ls -a
